@@ -8,13 +8,28 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - NODE_ENV=production
-      - DATABASE_URL=file:/app/prisma/dev.db
-      - NEXTAUTH_SECRET="your-secret-goes-here"
-      - NEXTAUTH_URL="http://localhost:3000"
+      NODE_ENV: production
+      DATABASE_URL: file:/app/prisma/dev.db
+      NEXTAUTH_SECRET: your-secret-goes-here
+      NEXTAUTH_URL: http://localhost:3000
     volumes:
       - sqlite_data:/app/prisma
       - uploads:/app/public/uploads
+
+  prisma-studio:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5555:5555"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: file:/app/prisma/dev.db
+    volumes:
+      - sqlite_data:/app/prisma
+    command: sh -lc "npx prisma studio --hostname 0.0.0.0 --port 5555"
+    depends_on:
+      - app
 
 volumes:
   sqlite_data:

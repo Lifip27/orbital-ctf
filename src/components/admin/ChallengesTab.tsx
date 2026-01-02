@@ -4,7 +4,7 @@ import { Challenge, NewChallenge, ApiError } from '@/types';
 import ChallengeModal from './ChallengeModal';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import { toast } from 'react-hot-toast';
-import { fetchAdminChallenges, deleteChallenge, exportChallenges, importChallenges } from '@/utils/api';
+import { fetchAdminChallenges, deleteChallenge, exportChallenges, importChallenges, deleteAdminSolve } from '@/utils/api';
 
 export default function ChallengesTab() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -60,6 +60,29 @@ export default function ChallengesTab() {
       const err = error as ApiError;
       console.error('Error deleting challenge:', err);
       toast.error(err.error || 'Failed to delete challenge');
+    }
+  };
+
+  const handleDeleteSolve = async (challengeId: string, teamId: string) => {
+    if (!window.confirm('Delete this team solve?')) {
+      return;
+    }
+
+    try {
+      await deleteAdminSolve(challengeId, teamId);
+      toast.success('Solve deleted');
+      setViewingSolves((current) => {
+        if (!current) return current;
+        return {
+          ...current,
+          solvedBy: current.solvedBy?.filter(team => team.id !== teamId)
+        };
+      });
+      await fetchChallenges();
+    } catch (error) {
+      const err = error as ApiError;
+      console.error('Error deleting solve:', err.error);
+      toast.error(err.error || 'Failed to delete solve');
     }
   };
 
@@ -281,15 +304,21 @@ export default function ChallengesTab() {
             </div>
             <div className="max-h-96 overflow-y-auto">
               {viewingSolves.solvedBy && viewingSolves.solvedBy.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-col gap-2">
                   {viewingSolves.solvedBy.map(team => (
-                    <span
+                    <div
                       key={team.id}
-                      className="px-3 py-2 rounded text-sm"
+                      className="flex items-center justify-between gap-3 px-3 py-2 rounded"
                       style={{ backgroundColor: team.color || '#333' }}
                     >
-                      {team.name}
-                    </span>
+                      <span className="text-sm">{team.name}</span>
+                      <button
+                        onClick={() => handleDeleteSolve(viewingSolves.id, team.id)}
+                        className="text-xs px-2 py-1 rounded bg-black/40 text-red-200 hover:bg-black/60"
+                      >
+                        Delete Solve
+                      </button>
+                    </div>
                   ))}
                 </div>
               ) : (

@@ -1,12 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import { AdminSubmission, ApiError } from '@/types';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
-import { fetchAdminSubmissions } from '@/utils/api';
+import { fetchAdminSubmissions, deleteAdminSubmission, deleteAdminSolve } from '@/utils/api';
+import { toast } from 'react-hot-toast';
 
 export default function SubmissionsTab() {
   const [submissions, setSubmissions] = useState<AdminSubmission[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchSubmissions = useCallback(async () => {
     setIsLoading(true);
@@ -26,6 +28,31 @@ export default function SubmissionsTab() {
   useEffect(() => {
     fetchSubmissions();
   }, [fetchSubmissions]);
+
+  const handleDelete = async (submission: AdminSubmission) => {
+    const label = submission.isCorrect ? 'delete this solve' : 'delete this submission';
+    if (!window.confirm(`Are you sure you want to ${label}?`)) {
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      if (submission.isCorrect) {
+        await deleteAdminSolve(submission.challenge.id, submission.team.id);
+        toast.success('Solve deleted');
+      } else {
+        await deleteAdminSubmission(submission.id);
+        toast.success('Submission deleted');
+      }
+      await fetchSubmissions();
+    } catch (deleteError) {
+      const err = deleteError as ApiError;
+      toast.error(err.error || err.message || 'Failed to delete');
+      console.error('Error deleting submission/solve:', deleteError);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   if (isLoading) {
     return <LoadingSpinner />;
@@ -48,6 +75,7 @@ export default function SubmissionsTab() {
               <th className="px-4 py-2 text-left">Challenge</th>
               <th className="px-4 py-2 text-left">Flag</th>
               <th className="px-4 py-2 text-left">Correct</th>
+              <th className="px-4 py-2 text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-700">
@@ -64,6 +92,19 @@ export default function SubmissionsTab() {
                   <span className={`px-2 py-1 rounded text-xs ${sub.isCorrect ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'}`}> 
                     {sub.isCorrect ? 'Yes' : 'No'}
                   </span>
+                </td>
+                <td className="px-4 py-2 whitespace-nowrap text-right">
+                  <button
+                    onClick={() => handleDelete(sub)}
+                    disabled={isDeleting}
+                    className={`px-3 py-1 rounded text-xs transition-colors ${
+                      sub.isCorrect
+                        ? 'bg-red-900 text-red-300 hover:bg-red-800'
+                        : 'bg-red-800 text-red-200 hover:bg-red-700'
+                    } disabled:opacity-50`}
+                  >
+                    {sub.isCorrect ? 'Delete Solve' : 'Delete'}
+                  </button>
                 </td>
               </tr>
             ))}

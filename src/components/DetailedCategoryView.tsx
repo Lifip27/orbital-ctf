@@ -3,10 +3,15 @@ import { useFrame } from '@react-three/fiber';
 import { Billboard, Box, Cylinder, Edges, Sphere, Text } from '@react-three/drei';
 import { useRouter } from 'next/navigation';
 import * as THREE from 'three';
-import { Challenge } from '@/types';
+interface DetailedChallenge {
+  id: string;
+  title: string;
+  isLocked: boolean;
+  isSolved?: boolean;
+}
 
 interface DetailedCategoryViewProps {
-  challenges: Challenge[];
+  challenges: DetailedChallenge[];
   hoveredChallenge: string | null;
   setHoveredChallenge: (id: string | null) => void;
 }

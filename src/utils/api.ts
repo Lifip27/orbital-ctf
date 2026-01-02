@@ -422,6 +422,32 @@ export async function fetchAdminSubmissions(): Promise<AdminSubmission[]> {
   return response.json();
 }
 
+export async function deleteAdminSubmission(submissionId: string): Promise<void> {
+  const response = await fetch('/api/admin/submissions', {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ submissionId }),
+  });
+
+  if (!response.ok) {
+    const data = await response.json();
+    throw new Error(data.error || 'Failed to delete submission');
+  }
+}
+
+export async function deleteAdminSolve(challengeId: string, teamId: string): Promise<void> {
+  const response = await fetch('/api/admin/submissions', {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ challengeId, teamId }),
+  });
+
+  if (!response.ok) {
+    const data = await response.json();
+    throw new Error(data.error || 'Failed to delete solve');
+  }
+}
+
 export async function fetchAdminActivityLogs(): Promise<AdminActivityLog[]> {
   const response = await fetch('/api/admin/activity');
   if (!response.ok) {

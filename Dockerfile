@@ -17,13 +17,15 @@ RUN npx prisma generate
 # Build the Next.js application
 RUN npm run build
 
+# Remove dev dependencies for a leaner runtime image
+RUN npm prune --omit=dev
+
 # Production stage
 FROM node:20-alpine AS runner
 WORKDIR /app
 
-# Install production dependencies only
-COPY package*.json ./
-RUN npm ci --production
+# Copy production dependencies from the builder stage
+COPY --from=builder /app/node_modules ./node_modules
 
 # Copy built files from builder stage
 COPY --from=builder /app/.next ./.next
@@ -37,6 +39,7 @@ RUN mkdir -p /challenges
 # Copy other necessary files
 COPY --from=builder /app/next.config.ts ./
 COPY --from=builder /app/package.json ./
+COPY --from=builder /app/package-lock.json ./
 
 # Create a non-root user and switch to it
 RUN addgroup --system --gid 1001 nodejs

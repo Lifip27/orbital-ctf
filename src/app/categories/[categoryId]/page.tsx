@@ -109,19 +109,7 @@ export default function CategoryPage() {
             <ambientLight intensity={0.5} />
             <pointLight position={[10, 10, 10]} />
             <DetailedCategoryView
-              challenges={challenges.map((c) => ({
-                ...c,
-                description: '',
-                flags: [],
-                multipleFlags: false,
-                difficulty: '',
-                isActive: true,
-                files: [],
-                hints: [],
-                unlockConditions: [],
-                createdAt: new Date(0).toISOString(),
-                updatedAt: new Date(0).toISOString(),
-              }))}
+              challenges={challenges}
               hoveredChallenge={hoveredChallenge}
               setHoveredChallenge={setHoveredChallenge}
             />

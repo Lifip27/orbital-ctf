@@ -22,9 +22,9 @@ export default function GameConfigurationTab() {
           setHasEndTime(data.hasEndTime !== false);
         }
       } catch (error) {
-        const err = error as ApiError;
-        console.error('Error fetching game config:', err.error);
-        toast.error(`Error fetching game config: ${err.error}`);
+        const message = getErrorMessage(error);
+        console.error('Error fetching game config:', message);
+        toast.error(`Error fetching game config: ${message}`);
       } finally {
         setLoading(false);
       }
@@ -53,9 +53,9 @@ export default function GameConfigurationTab() {
       setHasEndTime(data.hasEndTime !== false);
       toast.success('Game time settings updated successfully!');
     } catch (error) { 
-      const err = error as ApiError;
-      console.error('Error updating game config:', err.error);
-      toast.error(`Error updating game time settings: ${err.error}`);
+      const message = getErrorMessage(error);
+      console.error('Error updating game config:', message);
+      toast.error(`Error updating game time settings: ${message}`);
     }
   };
 
@@ -174,4 +174,11 @@ export default function GameConfigurationTab() {
       </div>
     </div>
   );
+}
+
+function getErrorMessage(error: unknown): string {
+  const err = error as ApiError;
+  if (err?.error) return err.error;
+  if (error instanceof Error && error.message) return error.message;
+  return 'Unknown error';
 }

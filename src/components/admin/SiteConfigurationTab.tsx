@@ -30,8 +30,8 @@ export default function SiteConfigurationTab() {
       );
       setIsLoading(false);
     } catch (fetchError) {
-      const err = fetchError as ApiError;
-      toast.error(`Error fetching configurations: ${err.error}`);
+      const message = getErrorMessage(fetchError);
+      toast.error(`Error fetching configurations: ${message}`);
       console.error('Error fetching configs:', fetchError);
       setIsLoading(false);
     }
@@ -48,8 +48,8 @@ export default function SiteConfigurationTab() {
       toast.success('All configurations updated successfully');
       fetchConfigs();
     } catch (updateError) {
-      const err = updateError as ApiError;
-      toast.error(`Error updating configurations: ${err.error}`);
+      const message = getErrorMessage(updateError);
+      toast.error(`Error updating configurations: ${message}`);
       console.error('Error updating configs:', updateError);
     }
   };
@@ -117,4 +117,11 @@ function getConfigDescription(key: string): string {
     rules_text: 'Competition rules and guidelines (supports Markdown)'
   };
   return descriptions[key] || '';
+}
+
+function getErrorMessage(error: unknown): string {
+  const err = error as ApiError;
+  if (err?.error) return err.error;
+  if (error instanceof Error && error.message) return error.message;
+  return 'Unknown error';
 }

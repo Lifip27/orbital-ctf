@@ -1,6 +1,7 @@
 import React from 'react';
 import { Challenge, NewChallenge, UnlockCondition, ChallengeFile, ApiError } from '@/types';
 import { FaTrash } from 'react-icons/fa';
+import { IoClose } from 'react-icons/io5';
 import { toast } from 'react-hot-toast';
 import { createChallenge, updateChallenge, uploadFile, deleteFile } from '@/utils/api';
 
@@ -44,7 +45,17 @@ export default function ChallengeModal({
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
       <div className="bg-gray-800 p-6 w-full max-w-3xl shadow-xl max-h-[90vh] overflow-y-auto">
-        <h2 className="text-2xl font-semibold mb-4">{title}</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-2xl font-semibold">{title}</h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-gray-400 hover:text-white"
+            aria-label="Close"
+          >
+            <IoClose size={20} />
+          </button>
+        </div>
         <form 
           onSubmit={(e) => 
             handleChallengeSubmit(
