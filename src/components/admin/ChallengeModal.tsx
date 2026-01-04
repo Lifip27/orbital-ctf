@@ -37,8 +37,9 @@ export default function ChallengeModal({
       if (onDataRefresh) await onDataRefresh();
     } catch (error) {
       const err = error as ApiError;
-      console.error('Error deleting file:', err.error);
-      toast.error(`Error deleting file: ${err.error}`);
+      const message = err.error || err.message || 'Unknown error';
+      console.error('Error deleting file:', message);
+      toast.error(`Error deleting file: ${message}`);
     }
   };
 
@@ -290,7 +291,8 @@ export default function ChallengeModal({
                       return await uploadFile(file, challenge.id);
                     } catch (error) {
                       const err = error as ApiError;
-                      toast.error(`Error uploading file: ${err.error}`);
+                      const message = err.error || err.message || 'Unknown error';
+                      toast.error(`Error uploading file: ${message}`);
                       throw error;
                     }
                   })
@@ -532,8 +534,9 @@ const handleChallengeSubmit = async (
 
   } catch (err) {
     const error = err as ApiError;
+    const message = error.error || error.message || 'Unknown error';
     console.error(`Error ${apiMethod === 'POST' ? 'creating' : 'updating'} challenge:`, error);
-    toast.error(`Error: ${error.error}`);
+    toast.error(`Error: ${message}`);
     if (onError) {
       onError(error);
     }
