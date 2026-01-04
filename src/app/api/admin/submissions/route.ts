@@ -27,9 +27,9 @@ export async function GET() {
       { status: 500 }
     );
   }
-}
+};
 
-export async function DELETE(request: Request) {
+const handleDelete = async (request: Request) => {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.isAdmin) {
@@ -133,3 +133,5 @@ export async function DELETE(request: Request) {
     );
   }
 }
+
+export { handleDelete as DELETE };
