@@ -8,6 +8,26 @@ async function isAdmin() {
   return session?.user?.isAdmin === true;
 }
 
+async function resolveCategory(category: string): Promise<string> {
+  const normalized = category.trim();
+  if (!normalized) {
+    return normalized;
+  }
+
+  const existing = await prisma.challenge.findFirst({
+    where: {
+      category: {
+        equals: normalized,
+        mode: 'insensitive'
+      }
+    },
+    select: { category: true },
+    orderBy: { category: 'asc' }
+  });
+
+  return existing?.category ?? normalized;
+}
+
 export async function POST(req: Request) {
   if (!await isAdmin()) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
@@ -15,12 +35,13 @@ export async function POST(req: Request) {
 
   try {
     const { title, description, category, points, flag, flags, multipleFlags, difficulty, isLocked, files, hints, unlockConditions, link, solveExplanation } = await req.json();
+    const normalizedCategory = await resolveCategory(category);
 
     const challenge = await prisma.challenge.create({
       data: {
         title,
         description,
-        category,
+        category: normalizedCategory,
         points,
         flag: multipleFlags ? undefined : flag,
         multipleFlags: multipleFlags || false,
@@ -143,6 +164,7 @@ export async function PATCH(req: Request) {
 
   try {
     const { id, title, description, category, points, flag, flags, multipleFlags, difficulty, isActive, isLocked, files, hints, unlockConditions, link, solveExplanation } = await req.json();
+    const normalizedCategory = typeof category === 'string' ? await resolveCategory(category) : category;
 
     // Get the current challenge state to check if it was previously locked
     const currentChallenge = await prisma.challenge.findUnique({
@@ -155,7 +177,7 @@ export async function PATCH(req: Request) {
       data: {
         title,
         description,
-        category,
+        category: normalizedCategory,
         points,
         flag: multipleFlags ? undefined : flag,
         multipleFlags,
