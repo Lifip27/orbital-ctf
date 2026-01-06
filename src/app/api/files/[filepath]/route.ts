@@ -7,10 +7,11 @@ import { prisma } from '@/lib/prisma';
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { filepath: string } }
+  { params }: { params: Promise<{ filepath: string }> }
 ) {
+  const { filepath } = await params;
   try {
-    const rawPath = params?.filepath;
+    const rawPath = filepath;
     if (!rawPath) {
       return NextResponse.json({ error: 'File path is required' }, { status: 400 });
     }
