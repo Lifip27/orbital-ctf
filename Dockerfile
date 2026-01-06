@@ -24,6 +24,8 @@ RUN npm prune --omit=dev
 FROM node:20-alpine AS runner
 WORKDIR /app
 
+RUN apk add --no-cache su-exec
+
 # Copy production dependencies from the builder stage
 COPY --from=builder /app/node_modules ./node_modules
 
@@ -44,7 +46,10 @@ COPY --from=builder /app/package-lock.json ./
 # Create a non-root user and switch to it
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 --ingroup nodejs --disabled-password --shell /sbin/nologin nextjs
-USER nextjs
+RUN chown -R nextjs:nodejs /app/public /app/prisma /challenges
+
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Expose the port the app runs on
 EXPOSE 3000
@@ -55,8 +60,8 @@ ENV PORT=3000
 ENV CHALLENGES_DIR=/challenges
 ENV INGEST_CHALLENGES_AT_STARTUP=false
 
+# Run with a root entrypoint to fix volume permissions, then drop to nextjs.
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 
 # Initialize database and run the app
-CMD npx prisma migrate deploy && \
-    npx prisma db seed && \
-    npm start
+CMD ["sh", "-lc", "npx prisma migrate deploy && npx prisma db seed && npm start"]
