@@ -14,16 +14,13 @@ async function resolveCategory(category: string): Promise<string> {
     return normalized;
   }
 
-  const existing = await prisma.challenge.findFirst({
-    where: {
-      category: {
-        equals: normalized,
-        mode: 'insensitive'
-      }
-    },
+  const normalizedLower = normalized.toLowerCase();
+  const categories = await prisma.challenge.findMany({
     select: { category: true },
+    distinct: ['category'],
     orderBy: { category: 'asc' }
   });
+  const existing = categories.find((entry) => entry.category.toLowerCase() === normalizedLower);
 
   return existing?.category ?? normalized;
 }
