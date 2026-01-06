@@ -7,7 +7,7 @@ import { prisma } from '@/lib/prisma';
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { filepath?: string } }
+  { params }: { params: { filepath: string } }
 ) {
   try {
     const rawPath = params?.filepath;
