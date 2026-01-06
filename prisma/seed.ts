@@ -24,11 +24,11 @@ async function main() {
   const siteConfigs: { key: string; value: string }[] = [
     {
       key: 'homepage_title',
-      value: 'Welcome to Orbital CTF'
+      value: 'Welcome to PwnCTF'
     },
     {
       key: 'site_title',
-      value: 'Orbital CTF'
+      value: 'PwnCTF'
     },
     {
       key: 'homepage_subtitle',

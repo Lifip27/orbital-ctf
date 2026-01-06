@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
+import { basename, join } from 'path';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
@@ -38,10 +38,11 @@ export async function POST(request: Request) {
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '');
+    const folderName = normalizedFolderName || `challenge-${challenge.id}`;
 
     const buffer = Buffer.from(await file.arrayBuffer());
-    const filename = file.name;
-    const challengeDir = join(process.cwd(), 'public', 'uploads', normalizedFolderName);
+    const filename = basename(file.name);
+    const challengeDir = join(process.cwd(), 'public', 'uploads', folderName);
     
     // Create challenge directory if it doesn't exist
     try {
@@ -63,7 +64,7 @@ export async function POST(request: Request) {
     const challengeFile = await prisma.challengeFile.create({
       data: {
         name: file.name,
-        path: `/uploads/${normalizedFolderName}/${filename}`,
+        path: `/uploads/${folderName}/${filename}`,
         size: file.size,
         challengeId: challenge.id
       }
@@ -77,8 +78,9 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error('Error uploading file:', error);
+    const message = error instanceof Error ? error.message : 'Error uploading file';
     return NextResponse.json(
-      { error: 'Error uploading file' },
+      { error: message },
       { status: 500 }
     );
   }

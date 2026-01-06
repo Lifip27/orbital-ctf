@@ -29,7 +29,7 @@ export default function Navbar() {
     glow: true,
     rollingScan: true,
   });
-  const [title, setTitle] = useState('ORBITAL CTF');
+  const [title, setTitle] = useState('PWNCTF');
 
   const navRef = useRef<HTMLDivElement>(null);
   const crtRef = useRef<HTMLDivElement>(null);
@@ -199,7 +199,7 @@ export default function Navbar() {
               href={status === 'authenticated' ? "/dashboard" : "/"} 
               className="text-xl font-bold text-white uppercase pointer-events-auto"
             >
-              {title?.toUpperCase() || "ORBITAL CTF"}
+              {title?.toUpperCase() || "PWNCTF"}
             </Link>
           </div>
 

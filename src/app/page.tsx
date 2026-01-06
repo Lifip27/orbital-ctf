@@ -6,7 +6,7 @@ import SpaceScene from '@/components/SpaceScene';
 import { fetchSiteConfigurations } from '@/utils/api';
 
 export default function Home() {
-  const [title, setTitle] = useState('Welcome to Orbital CTF');
+  const [title, setTitle] = useState('Welcome to PwnCTF');
   const [subtitle, setSubtitle] = useState('80s retro ui, space-themed, batteries included.');
 
   useEffect(() => {

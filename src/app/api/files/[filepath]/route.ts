@@ -7,10 +7,23 @@ import { prisma } from '@/lib/prisma';
 
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ filepath: string }> }
+  { params }: { params: { filepath?: string } }
 ) {
-  const { filepath } = await params;
   try {
+    const rawPath = params?.filepath;
+    if (!rawPath) {
+      return NextResponse.json({ error: 'File path is required' }, { status: 400 });
+    }
+
+    let decodedPath = rawPath;
+    try {
+      decodedPath = decodeURIComponent(rawPath);
+    } catch {
+      decodedPath = rawPath;
+    }
+
+    const normalizedPath = decodedPath.startsWith('/') ? decodedPath : `/${decodedPath}`;
+
     const session = await getServerSession(authOptions);
     if (!session?.user?.isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
@@ -18,7 +31,7 @@ export async function DELETE(
 
     // Get the file record from the database using the path
     const fileRecord = await prisma.challengeFile.findFirst({
-      where: { path: filepath }
+      where: { path: normalizedPath }
     });
 
     if (!fileRecord) {
@@ -26,10 +39,18 @@ export async function DELETE(
     }
 
     // Convert the public path to a filesystem path
-    const filePath = join(process.cwd(), 'public', fileRecord.path);
+    const relativePath = fileRecord.path.replace(/^\/+/, '');
+    const filePath = join(process.cwd(), 'public', relativePath);
 
     // Delete the file from the filesystem
-    await unlink(filePath);
+    try {
+      await unlink(filePath);
+    } catch (error) {
+      const err = error as NodeJS.ErrnoException;
+      if (err.code !== 'ENOENT') {
+        throw err;
+      }
+    }
 
     // Delete the file record from the database
     await prisma.challengeFile.delete({
@@ -39,9 +60,10 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error deleting file:', error);
+    const message = error instanceof Error ? error.message : 'Error deleting file';
     return NextResponse.json(
-      { error: 'Error deleting file' },
+      { error: message },
       { status: 500 }
     );
   }
-} 
+}
